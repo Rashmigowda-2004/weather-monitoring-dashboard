@@ -19,16 +19,18 @@ if st.button("Get Weather"):
     try:
         # Geocoding with headers
         headers = {"User-Agent": "Mozilla/5.0"}
-        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en&format=json"
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=5&language=en&format=json"
         geo = requests.get(geo_url, headers=headers, timeout=10).json()
 
         if "results" not in geo or len(geo["results"])==0:
             st.error(f"City '{city}' not found. Try 'Delhi', 'London'")
             st.write(geo) # debug
         else:
-            lat = geo["results"][0]["latitude"]
-            lon = geo["results"][0]["longitude"]
-            st.success(f"Found: {geo['results'][0]['name']}, {geo['results'][0].get('country','')}")
+            results = geo["results"]
+            best = next((r for r in results if r.get('country') == 'India'), results[0])
+            lat = best["latitude"]
+            lon = best["longitude"]
+            st.success(f"Found: {best['name']}, {best.get('country','')}")
 
             w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto"
             w = requests.get(w_url, headers=headers, timeout=10).json()
